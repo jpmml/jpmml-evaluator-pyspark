@@ -21,13 +21,10 @@ class PMMLTransformerTest(TestCase):
 
 	@classmethod
 	def setUpClass(cls):
-		spark_builder = SparkSession.builder \
+		cls.spark = SparkSession.builder \
 			.appName("PMMLTransformerTest") \
-			.master("local[2]")
-
-		cls.spark = spark_builder.getOrCreate()
-
-		cls.sc = cls.spark.sparkContext
+			.master("local[2]") \
+			.getOrCreate()
 
 	@classmethod
 	def tearDownClass(cls):
