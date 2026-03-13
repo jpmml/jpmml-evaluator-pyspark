@@ -3,6 +3,7 @@ from pyspark.sql import SparkSession
 from unittest import TestCase
 
 import os
+import tempfile
 
 JPMML_EVALUATOR_SPARK_JARS = os.environ.get("JPMML_EVALUATOR_SPARK_JARS", "")
 JPMML_EVALUATOR_SPARK_PACKAGES = os.environ.get("JPMML_EVALUATOR_SPARK_PACKAGES", "")
@@ -53,6 +54,12 @@ class IrisTest(PMMLTransformerTest):
 	def _create_transformer(self, evaluator):
 		raise NotImplementedError()
 
+	def _clone(self, transformer):
+		with tempfile.TemporaryDirectory(prefix = "iris_test_") as tmpdir:
+			path = os.path.join(tmpdir, "pipeline")
+			transformer.save(path)
+			return type(transformer).load(path)
+
 	def _get_success_col(self, transformer, pmml_df):
 		targetFields = transformer.evaluator.getTargetFields()
 		if len(targetFields) != 1:
@@ -66,6 +73,9 @@ class IrisTest(PMMLTransformerTest):
 	def checkIris(self):
 		evaluator = self._load_evaluator("DecisionTreeIris.pmml")
 		transformer = self._create_transformer(evaluator)
+		self.checkParamDefaults(transformer)
+
+		transformer = self._clone(transformer)
 		self.checkParamDefaults(transformer)
 
 		df = self._load_dataframe("Iris.csv")

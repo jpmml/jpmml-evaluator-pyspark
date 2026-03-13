@@ -1,6 +1,6 @@
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import Param, Params, TypeConverters
-from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
+from pyspark.ml.util import JavaMLWritable, MLReadable, MLReader
 from pyspark.ml.wrapper import JavaTransformer
 from pyspark.sql import SparkSession
 
@@ -19,7 +19,7 @@ def _create_java_transformer(java_class_name, evaluator):
 	else:
 		return None
 
-class PMMLTransformer(JavaTransformer, DefaultParamsReadable, DefaultParamsWritable):
+class PMMLTransformer(JavaTransformer, JavaMLWritable, MLReadable):
 
 	_java_class_name = "org.jpmml.evaluator.spark.PMMLTransformer"
 
@@ -69,6 +69,10 @@ class PMMLTransformer(JavaTransformer, DefaultParamsReadable, DefaultParamsWrita
 	def setSyntheticTargetName(self, value):
 		return self._set(syntheticTargetName = value)
 
+	@classmethod
+	def read(cls):
+		return _JavaReader(cls, cls._java_class_name)
+
 class FlatPMMLTransformer(PMMLTransformer):
 
 	_java_class_name = "org.jpmml.evaluator.spark.FlatPMMLTransformer"
@@ -92,3 +96,18 @@ class NestedPMMLTransformer(PMMLTransformer):
 
 	def setResultsCol(self, value):
 		return self._set(resultsCol = value)
+
+class _JavaReader(MLReader):
+
+	def __init__(self, py_class, java_class_name):
+		super().__init__()
+		self.py_class = py_class
+		self.java_class_name = java_class_name
+
+	def load(self, path):
+		java_obj = getattr(_jvm(), self.java_class_name).load(path)
+		
+		py_obj = self.py_class.__new__(self.py_class)
+		PMMLTransformer.__init__(py_obj, java_obj = java_obj)
+		
+		return py_obj
