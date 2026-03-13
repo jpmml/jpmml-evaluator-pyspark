@@ -2,18 +2,13 @@ from py4j.java_gateway import JavaObject
 from pyspark.ml.param import Param, Params, TypeConverters
 from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
 from pyspark.ml.wrapper import JavaTransformer
-from pyspark.sql import DataFrame, SparkSession
-
-_JVM = None
+from pyspark.sql import SparkSession
 
 def _jvm():
-	global _JVM
-	if _JVM is None:
-		spark = SparkSession.getActiveSession()
-		if spark is None:
-			raise RuntimeError("Apache Spark session not found")
-		_JVM = spark._jvm
-	return _JVM
+	spark = SparkSession.getActiveSession()
+	if spark is None:
+		raise RuntimeError("Apache Spark session not found")
+	return spark._jvm
 
 def _create_java_object(java_class_name, *args):
 	return getattr(_jvm(), java_class_name)(*args)

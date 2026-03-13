@@ -1,3 +1,4 @@
+from jpmml_evaluator_pyspark import _jvm
 from pyspark.sql import SparkSession
 from unittest import TestCase
 
@@ -34,7 +35,7 @@ class PMMLTransformerTest(TestCase):
 
 	def _load_evaluator(self, pmml_name):
 		path = os.path.join(os.path.dirname(__file__), "resources", pmml_name)
-		jvm = self.spark._jvm
+		jvm = _jvm()
 		pmml_is = jvm.java.io.FileInputStream(str(path))
 		try:
 			return jvm.org.jpmml.evaluator.LoadingModelEvaluatorBuilder() \
