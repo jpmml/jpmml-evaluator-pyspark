@@ -1,5 +1,7 @@
 from jpmml_evaluator_pyspark import _jvm
+from pyspark.ml import Pipeline
 from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType
 from unittest import TestCase
 
 import os
@@ -56,9 +58,10 @@ class IrisTest(PMMLTransformerTest):
 
 	def _clone(self, transformer):
 		with tempfile.TemporaryDirectory(prefix = "iris_test_") as tmpdir:
-			path = os.path.join(tmpdir, "pipeline")
+			path = os.path.join(tmpdir, "transformer")
 			transformer.save(path)
-			return type(transformer).load(path)
+			clonedTransformer = type(transformer).load(path)
+		return clonedTransformer
 
 	def _get_success_col(self, transformer, pmml_df):
 		targetFields = transformer.evaluator.getTargetFields()
@@ -84,6 +87,15 @@ class IrisTest(PMMLTransformerTest):
 	def checkIrisInvalid(self):
 		evaluator = self._load_evaluator("DecisionTreeIris.pmml")
 		transformer = self._create_transformer(evaluator)
+		self.checkParamDefaults(transformer)
+
+		pipeline = Pipeline(stages = [transformer])
+		pipelineModel = pipeline.fit(self.spark.createDataFrame([], StructType([])))
+
+		pipelineModel = self._clone(pipelineModel)
+		self.assertEqual(1, len(pipelineModel.stages))
+
+		transformer = pipelineModel.stages[0]
 		self.checkParamDefaults(transformer)
 
 		df = self._load_dataframe("IrisInvalid.csv")

@@ -4,11 +4,29 @@ from pyspark.ml.util import JavaMLWritable, MLReadable, MLReader
 from pyspark.ml.wrapper import JavaTransformer
 from pyspark.sql import SparkSession
 
+import sys
+import types
+
 def _jvm():
 	spark = SparkSession.getActiveSession()
 	if spark is None:
 		raise RuntimeError("Apache Spark session not found")
 	return spark._jvm
+
+def _ensure_module(module_path):
+	segments = module_path.split(".")
+	for i in range(len(segments)):
+		path = ".".join(segments[:i + 1])
+		if path not in sys.modules:
+			sys.modules[path] = types.ModuleType(path)
+	return sys.modules[module_path]
+
+def _register_transformer_class(py_class):
+	java_class_name = py_class._java_class_name
+	parts = java_class_name.rsplit(".", 1)
+	module = _ensure_module(parts[0])
+	if not hasattr(module, parts[1]):
+		setattr(module, parts[1], py_class)
 
 def _create_java_object(java_class_name, *args):
 	return getattr(_jvm(), java_class_name)(*args)
@@ -111,3 +129,6 @@ class _JavaReader(MLReader):
 		PMMLTransformer.__init__(py_obj, java_obj = java_obj)
 		
 		return py_obj
+
+_register_transformer_class(FlatPMMLTransformer)
+_register_transformer_class(NestedPMMLTransformer)
