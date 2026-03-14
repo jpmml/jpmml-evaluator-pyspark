@@ -12,10 +12,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - python: '3.8'
+            pyspark: '3.0.3'
+            java: '11'
+            jpmml-evaluator-spark-packages: 'org.jpmml:jpmml-evaluator-spark:2.0.2'
           - python: '3.11'
             pyspark: '3.5.4'
             java: '11'
             jpmml-evaluator-spark-packages: 'org.jpmml:jpmml-evaluator-spark:2.0.2'
+          - python: '3.13'
+            pyspark: '4.0.1'
+            java: '17'
+            jpmml-evaluator-spark-packages: 'org.jpmml:jpmml-evaluator-spark:2.1.2'
           - python: '3.13'
             pyspark: '4.1.0'
             java: '17'
