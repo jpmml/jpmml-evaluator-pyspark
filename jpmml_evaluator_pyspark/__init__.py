@@ -19,6 +19,9 @@ def _ensure_module(module_path):
 		path = ".".join(segments[:i + 1])
 		if path not in sys.modules:
 			sys.modules[path] = types.ModuleType(path)
+		if i > 0:
+			parent_path = ".".join(segments[:i])
+			setattr(sys.modules[parent_path], segments[i], sys.modules[path])
 	return sys.modules[module_path]
 
 def _register_transformer_class(py_class):
