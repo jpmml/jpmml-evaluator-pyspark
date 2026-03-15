@@ -11,6 +11,15 @@ setup(
 	url = "https://github.com/jpmml/jpmml-evaluator-pyspark",
 	download_url = "https://github.com/jpmml/jpmml-evaluator-pyspark/archive/" + __version__ + ".tar.gz",
 	license = __license__,
+	classifiers = [
+		"Development Status :: 5 - Production/Stable",
+		"Operating System :: OS Independent",
+		"Programming Language :: Python",
+		"Intended Audience :: Developers",
+		"Intended Audience :: Science/Research",
+		"Topic :: Software Development",
+		"Topic :: Scientific/Engineering"
+	],
 	packages = find_packages(exclude = ["*.tests.*", "*.tests"]),
 	exclude_package_data = {
 		"" : ["README.md"],
