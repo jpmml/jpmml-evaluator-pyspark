@@ -1,11 +1,10 @@
 from jpmml_evaluator_pyspark.wrapper import _jvm
-from pyspark.ml import Pipeline
+from pyspark.ml import PipelineModel
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType
+from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 import os
-import tempfile
 
 JPMML_EVALUATOR_SPARK_JARS = os.environ.get("JPMML_EVALUATOR_SPARK_JARS", "")
 JPMML_EVALUATOR_SPARK_PACKAGES = os.environ.get("JPMML_EVALUATOR_SPARK_PACKAGES", "")
@@ -19,6 +18,17 @@ if JPMML_EVALUATOR_SPARK_JARS or JPMML_EVALUATOR_SPARK_PACKAGES:
 	submit_args.append("pyspark-shell")
 
 	os.environ['PYSPARK_SUBMIT_ARGS'] = " ".join(submit_args)
+
+def _clone(obj):
+	with TemporaryDirectory() as tmpDir:
+		obj.write() \
+			.overwrite() \
+			.save(tmpDir)
+
+		cloned_obj = type(obj) \
+			.load(tmpDir)
+
+		return cloned_obj
 
 class PMMLTransformerTest(TestCase):
 
@@ -56,13 +66,6 @@ class IrisTest(PMMLTransformerTest):
 	def _create_transformer(self, evaluator):
 		raise NotImplementedError()
 
-	def _clone(self, transformer):
-		with tempfile.TemporaryDirectory(prefix = "iris_test_") as tmpdir:
-			path = os.path.join(tmpdir, "transformer")
-			transformer.save(path)
-			clonedTransformer = type(transformer).load(path)
-		return clonedTransformer
-
 	def _get_success_col(self, transformer, pmml_df):
 		targetFields = transformer.evaluator.getTargetFields()
 		if len(targetFields) != 1:
@@ -78,7 +81,8 @@ class IrisTest(PMMLTransformerTest):
 		transformer = self._create_transformer(evaluator)
 		self.checkParamDefaults(transformer)
 
-		transformer = self._clone(transformer)
+		# Direct persistence
+		transformer = _clone(transformer)
 		self.checkParamDefaults(transformer)
 
 		df = self._load_dataframe("Iris.csv")
@@ -89,11 +93,9 @@ class IrisTest(PMMLTransformerTest):
 		transformer = self._create_transformer(evaluator)
 		self.checkParamDefaults(transformer)
 
-		pipeline = Pipeline(stages = [transformer])
-		pipelineModel = pipeline.fit(self.spark.createDataFrame([], StructType([])))
-
-		pipelineModel = self._clone(pipelineModel)
-		self.assertEqual(1, len(pipelineModel.stages))
+		# Pipeline-mediated persistence
+		pipelineModel = PipelineModel(stages = [transformer])
+		pipelineModel = _clone(pipelineModel)
 
 		transformer = pipelineModel.stages[0]
 		self.checkParamDefaults(transformer)
