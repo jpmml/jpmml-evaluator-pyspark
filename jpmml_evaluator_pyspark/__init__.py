@@ -48,7 +48,7 @@ class PMMLTransformer(JavaTransformer, JavaMLWritable, MLReadable):
 	syntheticTargetName = Param(Params._dummy(), "syntheticTargetName", "Name for a synthetic target field", typeConverter = TypeConverters.toString)
 
 	def __init__(self, java_obj = None):
-		super(PMMLTransformer, self).__init__(java_obj = java_obj)
+		super().__init__(java_obj = java_obj)
 		if java_obj is not None:
 			self._resetUid(java_obj.uid())
 			self._transfer_params_from_java()
@@ -97,7 +97,7 @@ class FlatPMMLTransformer(PMMLTransformer):
 
 	def __init__(self, evaluator = None):
 		java_obj = _create_java_transformer(FlatPMMLTransformer._java_class_name, evaluator)
-		super(FlatPMMLTransformer, self).__init__(java_obj = java_obj)
+		super().__init__(java_obj = java_obj)
 
 class NestedPMMLTransformer(PMMLTransformer):
 
@@ -107,7 +107,7 @@ class NestedPMMLTransformer(PMMLTransformer):
 
 	def __init__(self, evaluator = None):
 		java_obj = _create_java_transformer(NestedPMMLTransformer._java_class_name, evaluator)
-		super(NestedPMMLTransformer, self).__init__(java_obj = java_obj)
+		super().__init__(java_obj = java_obj)
 
 	def getResultsCol(self):
 		return self.getOrDefault(self.resultsCol)
