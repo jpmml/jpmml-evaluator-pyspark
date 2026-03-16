@@ -21,7 +21,7 @@ def _ensure_module(module_path):
 			setattr(sys.modules[parent_path], segments[i], sys.modules[path])
 	return sys.modules[module_path]
 
-def _register_transformer_class(py_class):
+def _register_jpmml_class(py_class):
 	java_class_name = py_class._java_class_name
 	parts = java_class_name.rsplit(".", 1)
 	module = _ensure_module(parts[0])
@@ -130,5 +130,5 @@ class _JavaReader(MLReader):
 		
 		return py_obj
 
-_register_transformer_class(FlatPMMLTransformer)
-_register_transformer_class(NestedPMMLTransformer)
+_register_jpmml_class(FlatPMMLTransformer)
+_register_jpmml_class(NestedPMMLTransformer)
