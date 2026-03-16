@@ -1,17 +1,14 @@
 from py4j.java_gateway import JavaObject
+from pyspark import SparkContext
 from pyspark.ml.param import Param, Params, TypeConverters
 from pyspark.ml.util import JavaMLWritable, MLReadable, MLReader
 from pyspark.ml.wrapper import JavaTransformer
-from pyspark.sql import SparkSession
 
 import sys
 import types
 
 def _jvm():
-	spark = SparkSession.getActiveSession()
-	if spark is None:
-		raise RuntimeError("Apache Spark session not found")
-	return spark._jvm
+	return SparkContext._jvm
 
 def _ensure_module(module_path):
 	segments = module_path.split(".")
