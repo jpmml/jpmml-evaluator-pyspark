@@ -1,4 +1,4 @@
-from jpmml_evaluator_pyspark import _jvm
+from jpmml_evaluator_pyspark.wrapper import _jvm
 from pyspark.ml import Pipeline
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType
