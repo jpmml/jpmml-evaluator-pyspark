@@ -1,5 +1,5 @@
 from pyspark import SparkContext
-from pyspark.ml.util import MLReader
+from pyspark.ml.util import MLReadable, MLReader
 
 import sys
 import types
@@ -27,6 +27,12 @@ def _register_jpmml_class(py_class):
 
 def _create_java_object(java_class_name, *args):
 	return getattr(_jvm(), java_class_name)(*args)
+
+class JPMMLReadable(MLReadable):
+
+	@classmethod
+	def read(cls):
+		return _JavaReader(cls, cls._java_class_name)
 
 class _JavaReader(MLReader):
 

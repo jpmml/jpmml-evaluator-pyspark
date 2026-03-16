@@ -1,8 +1,8 @@
-from jpmml_evaluator_pyspark.wrapper import _create_java_object, _register_jpmml_class, _JavaReader
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import Param, Params, TypeConverters
-from pyspark.ml.util import JavaMLWritable, MLReadable, MLReader
+from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaTransformer
+from jpmml_evaluator_pyspark.wrapper import _create_java_object, _register_jpmml_class, JPMMLReadable
 
 def _create_java_transformer(java_class_name, evaluator):
 	if isinstance(evaluator, JavaObject):
@@ -10,7 +10,7 @@ def _create_java_transformer(java_class_name, evaluator):
 	else:
 		return None
 
-class PMMLTransformer(JavaTransformer, JavaMLWritable, MLReadable):
+class PMMLTransformer(JavaTransformer, JPMMLReadable, JavaMLWritable):
 
 	_java_class_name = "org.jpmml.evaluator.spark.PMMLTransformer"
 
@@ -61,10 +61,6 @@ class PMMLTransformer(JavaTransformer, JavaMLWritable, MLReadable):
 
 	def setSyntheticTargetName(self, value):
 		return self._set(syntheticTargetName = value)
-
-	@classmethod
-	def read(cls):
-		return _JavaReader(cls, cls._java_class_name)
 
 class FlatPMMLTransformer(PMMLTransformer):
 
