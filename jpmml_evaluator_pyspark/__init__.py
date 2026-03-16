@@ -47,9 +47,11 @@ class PMMLTransformer(JavaTransformer, JavaMLWritable, MLReadable):
 	exceptionCol = Param(Params._dummy(), "exceptionCol", "Exception column name", typeConverter = TypeConverters.toString)
 	syntheticTargetName = Param(Params._dummy(), "syntheticTargetName", "Name for a synthetic target field", typeConverter = TypeConverters.toString)
 
-	def __init__(self, java_obj = None):
+	def __init__(self, evaluator = None, java_obj = None):
+		if evaluator is not None:
+			java_obj = _create_java_transformer(self._java_class_name, evaluator)
 		super().__init__(java_obj = java_obj)
-		if java_obj is not None:
+		if evaluator is not None:
 			self._resetUid(java_obj.uid())
 			self._transfer_params_from_java()
 
@@ -95,9 +97,8 @@ class FlatPMMLTransformer(PMMLTransformer):
 
 	_java_class_name = "org.jpmml.evaluator.spark.FlatPMMLTransformer"
 
-	def __init__(self, evaluator = None):
-		java_obj = _create_java_transformer(FlatPMMLTransformer._java_class_name, evaluator)
-		super().__init__(java_obj = java_obj)
+	def __init__(self, evaluator = None, *, java_obj = None):
+		super().__init__(evaluator = evaluator, java_obj = java_obj)
 
 class NestedPMMLTransformer(PMMLTransformer):
 
@@ -105,9 +106,8 @@ class NestedPMMLTransformer(PMMLTransformer):
 
 	resultsCol = Param(Params._dummy(), "resultsCol", "Results column name", typeConverter = TypeConverters.toString)
 
-	def __init__(self, evaluator = None):
-		java_obj = _create_java_transformer(NestedPMMLTransformer._java_class_name, evaluator)
-		super().__init__(java_obj = java_obj)
+	def __init__(self, evaluator = None, *, java_obj = None):
+		super().__init__(evaluator = evaluator, java_obj = java_obj)
 
 	def getResultsCol(self):
 		return self.getOrDefault(self.resultsCol)
@@ -124,10 +124,11 @@ class _JavaReader(MLReader):
 
 	def load(self, path):
 		java_obj = getattr(_jvm(), self.java_class_name).load(path)
-		
-		py_obj = self.py_class.__new__(self.py_class)
-		PMMLTransformer.__init__(py_obj, java_obj = java_obj)
-		
+
+		py_obj = self.py_class(java_obj = java_obj)
+		py_obj._resetUid(java_obj.uid())
+		py_obj._transfer_params_from_java()
+
 		return py_obj
 
 _register_jpmml_class(FlatPMMLTransformer)
