@@ -1,6 +1,6 @@
 from jpmml_evaluator_pyspark import shared, spark3, spark4
 from jpmml_evaluator_pyspark.wrapper import _create_java_object, _register_jpmml_class, JPMMLReadable
-from jpmml_evaluator_pyspark.util import load_jars
+from jpmml_evaluator_pyspark.util import load_jars, load_jars_packages
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import Param, Params, TypeConverters
 from pyspark.ml.util import JavaMLWritable
@@ -27,8 +27,18 @@ def _jars(version: str = None) -> List[str]:
 	shared_jars = load_jars(os.path.dirname(shared.__file__))
 	return spark_jars + shared_jars
 
+def _jars_packages(version: str = None) -> List[str]:
+	if version is None:
+		version = pyspark.__version__
+	spark_module = _spark_module(version)
+	spark_jars_packages = load_jars_packages(os.path.dirname(spark_module.__file__))
+	return spark_jars_packages
+
 def spark_jars(version: str = None) -> str:
 	return ",".join(_jars(version = version))
+
+def spark_jars_packages(version: str = None) -> str:
+	return ",".join(_jars_packages(version = version))
 
 def _create_java_transformer(java_class_name, evaluator):
 	if isinstance(evaluator, JavaObject):
