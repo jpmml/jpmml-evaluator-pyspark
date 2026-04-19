@@ -1,3 +1,4 @@
+from jpmml_evaluator_pyspark import classpath
 from jpmml_evaluator_pyspark.wrapper import _jvm
 from pyspark.ml import PipelineModel
 from pyspark.sql import SparkSession
@@ -37,6 +38,7 @@ class PMMLTransformerTest(TestCase):
 		cls.spark = SparkSession.builder \
 			.appName("PMMLTransformerTest") \
 			.master("local[2]") \
+			.config("spark.jars", ",".join(classpath())) \
 			.getOrCreate()
 
 	@classmethod

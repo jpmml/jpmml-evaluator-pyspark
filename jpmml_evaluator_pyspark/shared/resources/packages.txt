@@ -1,0 +1,2 @@
+org.jpmml:pmml-evaluator:1.7.7
+org.jpmml:pmml-evaluator-metro:1.7.7
