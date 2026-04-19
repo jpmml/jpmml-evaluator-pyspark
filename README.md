@@ -16,34 +16,58 @@ This package is a thin Python wrapper around the [JPMML-Evaluator-Spark](https:/
 
 Installing a release version from PyPI:
 
-```
+```bash
 pip install jpmml_evaluator_pyspark
 ```
 
 Alternatively, installing the latest snapshot version from GitHub:
 
-```
+```bash
 pip install --upgrade git+https://github.com/jpmml/jpmml-evaluator-pyspark.git
 ```
 
-# Usage #
-
-## Configuration
+# Configuration #
 
 JPMML-Evaluator-PySpark must be paired with JPMML-Evaluator-Spark based on the following compatibility matrix:
 
 | PySpark version | JPMML-Evaluator-Spark branch | Latest JPMML-Evaluator-Spark version |
 |-----------------|------------------------------|--------------------------------------|
-| 3.0.X through 3.5.X | [`2.0.X`](https://github.com/jpmml/jpmml-evaluator-spark/tree/2.0.X) | 2.0.2 |
 | 4.0.X and 4.1.X | [`master`](https://github.com/jpmml/jpmml-evaluator-spark/tree/master) | 2.1.2 |
+| 3.0.X through 3.5.X | [`2.0.X`](https://github.com/jpmml/jpmml-evaluator-spark/tree/2.0.X) | 2.0.2 |
 
-Launch PySpark; use the `--packages` command-line option to specify the coordinates of the JPMML-Evaluator-Spark module:
+## Local setup
 
-```bash
-pyspark --packages org.jpmml:jpmml-evaluator-spark:${version}
+JPMML-Evaluator-PySpark version 0.3.0 and newer bundle JPMML-Evaluator-Spark JAR files for quick programmatic setup.
+
+Use the `jpmml_evaluator_pyspark.spark_jars()` utility function to obtain a PySpark-version dependent classpath string, and pass it as `spark.jars` configuration entry when building a Spark session:
+
+```python
+from pyspark.sql import SparkSession
+
+import jpmml_evaluator_pyspark
+
+spark = SparkSession.builder \
+	.config("spark.jars", jpmml_evaluator_pyspark.spark_jars()) \
+	.getOrCreate()
 ```
 
-## Workflow
+## Cluster setup
+
+Use the `jpmml_evaluator_pyspark.spark_jars_packages()` utility function to obtain a PySpark-version dependent Apache Maven package coordinates string:
+
+```python
+import jpmml_evaluator_pyspark
+
+print(jpmml_evaluator_pyspark.spark_jars_packages())
+```
+
+Pass this value to `pyspark` or `spark-submit` using the `--packages` command-line option:
+
+```bash
+$SPARK_HOME/bin/pyspark --packages $(python -c "import jpmml_evaluator_pyspark; print(jpmml_evaluator_pyspark.spark_jars_packages())")
+```
+
+# Usage #
 
 The "heart" of the PMML transformer is an `org.jpmml.evaluator.Evaluator` object.
 
@@ -99,4 +123,4 @@ If you would like to use JPMML-Evaluator-PySpark in a proprietary software proje
 
 JPMML-Evaluator-PySpark is developed and maintained by Openscoring Ltd, Estonia.
 
-Interested in using JPMML software in your software? Please contact [info@openscoring.io](mailto:info@openscoring.io)
+Interested in using [Java PMML API](https://github.com/jpmml) software in your company? Please contact [info@openscoring.io](mailto:info@openscoring.io)
