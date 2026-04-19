@@ -1,6 +1,6 @@
 from jpmml_evaluator_pyspark import shared, spark3, spark4
 from jpmml_evaluator_pyspark.wrapper import _create_java_object, _register_jpmml_class, JPMMLReadable
-from jpmml_evaluator_pyspark.util import load_classpath
+from jpmml_evaluator_pyspark.util import load_jars
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import Param, Params, TypeConverters
 from pyspark.ml.util import JavaMLWritable
@@ -19,13 +19,16 @@ def _spark_module(version: str) -> ModuleType:
 	else:
 		raise ValueError("Apache Spark version {version} is not supported".format(version = version))
 
-def classpath(version: str = None) -> List[str]:
+def _jars(version: str = None) -> List[str]:
 	if version is None:
 		version = pyspark.__version__
 	spark_module = _spark_module(version)
-	spark_jars = load_classpath(os.path.dirname(spark_module.__file__))
-	shared_jars = load_classpath(os.path.dirname(shared.__file__))
+	spark_jars = load_jars(os.path.dirname(spark_module.__file__))
+	shared_jars = load_jars(os.path.dirname(shared.__file__))
 	return spark_jars + shared_jars
+
+def spark_jars(version: str = None) -> str:
+	return ",".join(_jars(version = version))
 
 def _create_java_transformer(java_class_name, evaluator):
 	if isinstance(evaluator, JavaObject):
